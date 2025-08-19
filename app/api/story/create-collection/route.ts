@@ -15,8 +15,7 @@ export async function POST(req: NextRequest) {
       isPublicMinting: false,
       mintOpen: true,
       mintFeeRecipient: zeroAddress,
-      contractURI: "",
-      txOptions: { waitForTransaction: true },
+      contractURI: ""
     });
 
     return Response.json(
