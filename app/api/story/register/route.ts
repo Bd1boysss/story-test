@@ -1,5 +1,10 @@
+// app/api/story/register/route.ts
 import { NextRequest } from "next/server";
-import { getStoryClient, WIP_TOKEN_ADDRESS, ROYALTY_POLICY_LAP } from "@/lib/story";
+import {
+  getStoryClient,
+  WIP_TOKEN_ADDRESS,
+  ROYALTY_POLICY_LAP,
+} from "@/lib/story";
 import { LicenseTerms } from "@story-protocol/core-sdk";
 import { createHash } from "crypto";
 import { toHex, zeroAddress } from "viem";
@@ -18,42 +23,58 @@ type Payload = {
 function buildTerms(flavor: Payload["flavor"]): LicenseTerms {
   if (flavor === "nonCommercial") {
     return {
-      transferable: true, royaltyPolicy: ROYALTY_POLICY_LAP, defaultMintingFee: 0n, expiration: 0n,
-      commercialUse: false, commercialAttribution: true, commercializerChecker: zeroAddress,
-      commercializerCheckerData: "0x", commercialRevShare: 0, commercialRevCeiling: 0n,
-      derivativesAllowed: true, derivativesAttribution: true, derivativesApproval: false, derivativesReciprocal: false,
-      derivativeRevCeiling: 0n, currency: WIP_TOKEN_ADDRESS, uri: "",
+      transferable: true,
+      royaltyPolicy: ROYALTY_POLICY_LAP,
+      defaultMintingFee: 0n,
+      expiration: 0n,
+      commercialUse: false,
+      commercialAttribution: true,
+      commercializerChecker: zeroAddress,
+      commercializerCheckerData: "0x",
+      commercialRevShare: 0,
+      commercialRevCeiling: 0n,
+      derivativesAllowed: true,
+      derivativesAttribution: true,
+      derivativesApproval: false,
+      derivativesReciprocal: false,
+      derivativeRevCeiling: 0n,
+      currency: WIP_TOKEN_ADDRESS,
+      uri: "",
     };
   }
   if (flavor === "commercialUse") {
     return {
-      transferable: true, royaltyPolicy: ROYALTY_POLICY_LAP, defaultMintingFee: 0n, expiration: 0n,
-      commercialUse: true, commercialAttribution: true, commercializerChecker: zeroAddress,
-      commercializerCheckerData: "0x", commercialRevShare: 0, commercialRevCeiling: 0n,
-      derivativesAllowed: false, derivativesAttribution: false, derivativesApproval: false, derivativesReciprocal: false,
-      derivativeRevCeiling: 0n, currency: WIP_TOKEN_ADDRESS, uri: "",
+      transferable: true,
+      royaltyPolicy: ROYALTY_POLICY_LAP,
+      defaultMintingFee: 0n,
+      expiration: 0n,
+      commercialUse: true,
+      commercialAttribution: true,
+      commercializerChecker: zeroAddress,
+      commercializerCheckerData: "0x",
+      commercialRevShare: 0,
+      commercialRevCeiling: 0n,
+      derivativesAllowed: false,
+      derivativesAttribution: false,
+      derivativesApproval: false,
+      derivativesReciprocal: false,
+      derivativeRevCeiling: 0n,
+      currency: WIP_TOKEN_ADDRESS,
+      uri: "",
     };
   }
+  // commercialRemix
   return {
-    transferable: true, royaltyPolicy: ROYALTY_POLICY_LAP, defaultMintingFee: 0n, expiration: 0n,
-    commercialUse: true, commercialAttribution: true, commercializerChecker: zeroAddress,
-    commercializerCheckerData: "0x", commercialRevShare: 50, commercialRevCeiling: 0n,
-    derivativesAllowed: true, derivativesAttribution: true, derivativesApproval: false, derivativesReciprocal: true,
-    derivativeRevCeiling: 0n, currency: WIP_TOKEN_ADDRESS, uri: "",
-  };
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const client = getStoryClient();
-    const body = (await req.json()) as Payload;
-    const title = body.title || "My First Story IP";
-    const description = body.description || "Created with Story SDK";
-    const image = body.image || "https://picsum.photos/600/400";
-
-    const ipMetadata = {
-      title, description, image,
-      imageHash: toHex(createHash("sha256").update(image).digest("hex")),
-      mediaUrl: image,
-      mediaHash: toHex(createHash("sha256").update(image).digest("hex")),
-      mediaType: "image/png",
+    transferable: true,
+    royaltyPolicy: ROYALTY_POLICY_LAP,
+    defaultMintingFee: 0n,
+    expiration: 0n,
+    commercialUse: true,
+    commercialAttribution: true,
+    commercializerChecker: zeroAddress,
+    commercializerCheckerData: "0x",
+    commercialRevShare: 50,
+    commercialRevCeiling: 0n,
+    derivativesAllowed: true,
+    derivativesAttribution: true,
+    derivativesApproval:
