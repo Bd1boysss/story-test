@@ -9,6 +9,7 @@ import { LicenseTerms } from "@story-protocol/core-sdk";
 import { createHash } from "crypto";
 import { zeroAddress } from "viem";
 
+// ---- Types ----
 type Payload = {
   title?: string;
   description?: string;
@@ -20,13 +21,20 @@ type Payload = {
   flavor?: "nonCommercial" | "commercialUse" | "commercialRemix";
 };
 
-/** Helper: buat hash hex "0x..." dengan tipe yang benar */
+type IpMetadataPack = {
+  ipMetadataURI: string;
+  ipMetadataHash: `0x${string}`;
+  nftMetadataURI: string;
+  nftMetadataHash: `0x${string}`;
+};
+
+// ---- Helpers ----
 function hexHash(input: string): `0x${string}` {
-  const h = createHash("sha256").update(input).digest("hex");
-  return (`0x${h}`) as `0x${string}`;
+  // sha256 -> hex string with 0x prefix
+  const hex = createHash("sha256").update(input).digest("hex");
+  return (`0x${hex}`) as `0x${string}`;
 }
 
-/** License presets */
 function buildTerms(flavor: Payload["flavor"]): LicenseTerms {
   if (flavor === "nonCommercial") {
     return {
@@ -55,155 +63,4 @@ function buildTerms(flavor: Payload["flavor"]): LicenseTerms {
       royaltyPolicy: ROYALTY_POLICY_LAP,
       defaultMintingFee: 0n,
       expiration: 0n,
-      commercialUse: true,
-      commercialAttribution: true,
-      commercializerChecker: zeroAddress,
-      commercializerCheckerData: "0x",
-      commercialRevShare: 0,
-      commercialRevCeiling: 0n,
-      derivativesAllowed: false,
-      derivativesAttribution: false,
-      derivativesApproval: false,
-      derivativesReciprocal: false,
-      derivativeRevCeiling: 0n,
-      currency: WIP_TOKEN_ADDRESS,
-      uri: "",
-    };
-  }
-  // default: commercialRemix
-  return {
-    transferable: true,
-    royaltyPolicy: ROYALTY_POLICY_LAP,
-    defaultMintingFee: 0n,
-    expiration: 0n,
-    commercialUse: true,
-    commercialAttribution: true,
-    commercializerChecker: zeroAddress,
-    commercializerCheckerData: "0x",
-    commercialRevShare: 50,
-    commercialRevCeiling: 0n,
-    derivativesAllowed: true,
-    derivativesAttribution: true,
-    derivativesApproval: false,
-    derivativesReciprocal: true,
-    derivativeRevCeiling: 0n,
-    currency: WIP_TOKEN_ADDRESS,
-    uri: "",
-  };
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const client = getStoryClient();
-    const body = (await req.json()) as Payload;
-
-    const title = body.title || "My First Story IP";
-    const description = body.description || "Created with Story SDK";
-    const image = body.image || "https://picsum.photos/600/400";
-
-    // --- pack metadata + hashes yang benar (0x...) ---
-    const ipMetadata = {
-      title,
-      description,
-      image,
-      imageHash: hexHash(image),
-      mediaUrl: image,
-      mediaHash: hexHash(image),
-      mediaType: "image/png",
-      creators: [
-        {
-          name: "You",
-          address: "0x0000000000000000000000000000000000000000",
-          description: "Creator",
-          contributionPercent: 100,
-          socialMedia: [],
-        },
-      ],
-    };
-    const nftMetadata = {
-      name: `${title} — Ownership NFT`,
-      description,
-      image,
-    };
-
-    const ipMetadataPack = {
-      ipMetadataURI: "ipfs://todo",
-      ipMetadataHash: hexHash(JSON.stringify(ipMetadata)),
-      nftMetadataURI: "ipfs://todo",
-      nftMetadataHash: hexHash(JSON.stringify(nftMetadata)),
-    };
-
-    const terms = buildTerms(body.flavor || "commercialRemix");
-    const mode =
-      body.mode || (process.env.EXISTING_NFT_ADDRESS ? "existingNft" : "spgMint");
-
-    if (mode === "existingNft") {
-      // register IP dari NFT yang sudah ada
-      const nftContract = (body.nftContract ||
-        process.env.EXISTING_NFT_ADDRESS) as `0x${string}`;
-      const tokenId = String(
-        body.tokenId || process.env.EXISTING_NFT_TOKEN_ID || "1"
-      );
-      if (!nftContract) {
-        return Response.json(
-          { ok: false, error: "Missing nftContract" },
-          { status: 400 }
-        );
-      }
-
-      const rsp = await client.ipAsset.registerIpAndAttachPilTerms({
-        nftContract,
-        tokenId,
-        licenseTermsData: [{ terms }],
-        ipMetadata: ipMetadataPack,
-        deadline: Date.now() + 60_000, // required by SDK
-      });
-
-      return Response.json(
-        {
-          ok: true,
-          mode,
-          txHash: rsp.txHash,
-          ipId: rsp.ipId,
-          tokenId: rsp.tokenId,
-          licenseTermsIds: rsp.licenseTermsIds,
-        },
-        { status: 200 }
-      );
-    } else {
-      // mint SPG NFT + register IP sekaligus
-      const spgNftContract = (body.spgNftContract ||
-        process.env.STORY_SPG_NFT_CONTRACT) as `0x${string}`;
-      if (!spgNftContract) {
-        return Response.json(
-          { ok: false, error: "Missing spgNftContract" },
-          { status: 400 }
-        );
-      }
-
-      const rsp = await client.ipAsset.mintAndRegisterIpAssetWithPilTerms({
-        spgNftContract,
-        licenseTermsData: [{ terms }],
-        ipMetadata: ipMetadataPack,
-        recipient: undefined,
-      });
-
-      return Response.json(
-        {
-          ok: true,
-          mode,
-          txHash: rsp.txHash,
-          ipId: rsp.ipId,
-          tokenId: rsp.tokenId,
-          licenseTermsIds: rsp.licenseTermsIds,
-        },
-        { status: 200 }
-      );
-    }
-  } catch (e: any) {
-    return Response.json(
-      { ok: false, error: e?.message || String(e) },
-      { status: 500 }
-    );
-  }
-        }
+      commercialUse: true
