@@ -3,6 +3,6 @@ import { NextRequest } from "next/server";
 export async function POST(req: NextRequest) {
   return Response.json({
     ok: true,
-    msg: "Stub register API jalan ✅ v3",
+    msg: "Stub register API jalan ✅ v4",
   });
 }
