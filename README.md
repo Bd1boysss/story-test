@@ -121,3 +121,4 @@ npm run dev
 - Never commit `.env` secrets.
 - Use a burner wallet for server-side signing.
 - Consider provider RPC rate-limits for public endpoints.
+bump: redeploy
